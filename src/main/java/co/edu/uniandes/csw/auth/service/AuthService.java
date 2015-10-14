@@ -1,0 +1,122 @@
+package co.edu.uniandes.csw.auth.service;
+
+import co.edu.uniandes.csw.auth.model.UserDTO;
+import com.stormpath.sdk.account.Account;
+import com.stormpath.sdk.account.AccountStatus;
+import com.stormpath.sdk.application.Application;
+import com.stormpath.sdk.client.Client;
+import com.stormpath.sdk.group.Group;
+import com.stormpath.sdk.group.GroupList;
+import com.stormpath.sdk.resource.ResourceException;
+import com.stormpath.shiro.realm.ApplicationRealm;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.mgt.RealmSecurityManager;
+import org.apache.shiro.subject.Subject;
+
+@Path("/users")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+public class AuthService {
+
+    @Path("/login")
+    @POST
+    public Response login(UserDTO user) {
+        UsernamePasswordToken token = new UsernamePasswordToken(user.getUserName(), user.getPassword(), user.isRememberMe());
+        Subject currentUser = SecurityUtils.getSubject();
+        try {
+            currentUser.login(token);
+            return Response.ok(token).build();
+        } catch (AuthenticationException e) {
+            Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+
+    @Path("/logout")
+    @GET
+    public Response logout() {
+
+        Subject currentUser = SecurityUtils.getSubject();
+        if (currentUser != null) {
+            currentUser.logout();
+            return Response.ok().build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+    }
+
+    @Path("/currentUser")
+    @GET
+    public Response getCurrentUser() {
+        UserDTO user = new UserDTO();
+        Subject currentUser = SecurityUtils.getSubject();
+        if (currentUser != null) {
+            Map<String, String> userAttributes = (Map<String, String>) currentUser.getPrincipals().oneByType(java.util.Map.class
+            );
+            user.setName(userAttributes.get("givenName") + " " + userAttributes.get("surname"));
+            user.setEmail(userAttributes.get("email"));
+            user.setUserName(userAttributes.get("username"));
+            return Response.ok(user)
+                    .build();
+        } else {
+            Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, "user null");
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("user null")
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+
+    @Path("/register")
+    @POST
+    public Response setUser(UserDTO user) {
+        try {
+            createUser(user);
+            return Response.ok().build();
+        } catch (ResourceException e) {
+            return Response.status(e.getStatus())
+                    .entity(e.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+
+    private Account createUser(UserDTO user) {
+        ApplicationRealm realm = ((ApplicationRealm) ((RealmSecurityManager) SecurityUtils.getSecurityManager()).getRealms().iterator().next());
+        Client client = realm.getClient();
+        Application application = client.getResource(realm.getApplicationRestUrl(), Application.class
+        );
+        Account acct = client.instantiate(Account.class);
+
+        acct.setUsername(user.getUserName());
+        acct.setPassword(user.getPassword());
+        acct.setEmail(user.getEmail());
+        acct.setGivenName(user.getName());
+        acct.setSurname(user.getName());
+        acct.setStatus(AccountStatus.ENABLED);
+        GroupList groups = application.getGroups();
+        for (Group grp : groups) {
+            if (grp.getName().equals(user.getRole())) {
+                acct = application.createAccount(acct);
+                acct.addGroup(grp);
+                break;
+            }
+        }
+        return acct;
+    }
+}
