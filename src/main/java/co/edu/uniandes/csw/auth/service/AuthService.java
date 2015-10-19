@@ -2,7 +2,10 @@ package co.edu.uniandes.csw.auth.service;
 
 import co.edu.uniandes.csw.auth.model.UserDTO;
 import com.stormpath.sdk.account.Account;
+import com.stormpath.sdk.account.AccountCriteria;
+import com.stormpath.sdk.account.AccountList;
 import com.stormpath.sdk.account.AccountStatus;
+import com.stormpath.sdk.account.Accounts;
 import com.stormpath.sdk.application.Application;
 import com.stormpath.sdk.client.Client;
 import com.stormpath.sdk.group.Group;
@@ -13,9 +16,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -97,11 +102,7 @@ public class AuthService {
     }
 
     private Account createUser(UserDTO user) {
-        ApplicationRealm realm = ((ApplicationRealm) ((RealmSecurityManager) SecurityUtils.getSecurityManager()).getRealms().iterator().next());
-        Client client = realm.getClient();
-        Application application = client.getResource(realm.getApplicationRestUrl(), Application.class
-        );
-        Account acct = client.instantiate(Account.class);
+        Account acct = getClient().instantiate(Account.class);
 
         acct.setUsername(user.getUserName());
         acct.setPassword(user.getPassword());
@@ -109,6 +110,8 @@ public class AuthService {
         acct.setGivenName(user.getName());
         acct.setSurname(user.getName());
         acct.setStatus(AccountStatus.ENABLED);
+
+        Application application = getApplication();
         GroupList groups = application.getGroups();
         for (Group grp : groups) {
             if (grp.getName().equals(user.getRole())) {
@@ -118,5 +121,27 @@ public class AuthService {
             }
         }
         return acct;
+    }
+
+    @Path("delete/{username}")
+    @DELETE
+    public void deleteAccount(@PathParam("username") String username) {
+        AccountCriteria criteria = Accounts.where(Accounts.username().eqIgnoreCase(username));
+        AccountList accounts = getApplication().getAccounts(criteria);
+        for (Account account : accounts) {
+            account.delete();
+        }
+    }
+
+    private ApplicationRealm getRealm() {
+        return ((ApplicationRealm) ((RealmSecurityManager) SecurityUtils.getSecurityManager()).getRealms().iterator().next());
+    }
+
+    private Client getClient() {
+        return getRealm().getClient();
+    }
+
+    private Application getApplication() {
+        return getClient().getResource(getRealm().getApplicationRestUrl(), Application.class);
     }
 }
