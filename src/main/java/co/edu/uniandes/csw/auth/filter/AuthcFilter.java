@@ -9,7 +9,6 @@ package co.edu.uniandes.csw.auth.filter;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
 
 /**
@@ -21,7 +20,7 @@ public class AuthcFilter extends FormAuthenticationFilter {
     @Override
     public boolean onAccessDenied(ServletRequest request, ServletResponse response) {
         ((HttpServletResponse)response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        return SecurityUtils.getSubject().isAuthenticated();
+        return false;
     }
 
 }

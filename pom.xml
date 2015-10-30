@@ -4,11 +4,20 @@
 
     <groupId>co.edu.uniandes.csw</groupId>
     <artifactId>AuthService</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>AuthService</name>
-
+    <distributionManagement>
+        <repository>
+            <id>csw-releases</id>
+            <url>http://157.253.236.129:8081/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>csw-snapshots</id>
+            <url>http://157.253.236.129:8081/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
