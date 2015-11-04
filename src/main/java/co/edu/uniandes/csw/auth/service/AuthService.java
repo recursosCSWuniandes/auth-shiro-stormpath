@@ -89,7 +89,7 @@ public class AuthService {
 
     @Path("/register")
     @POST
-    public Response setUser(UserDTO user) {
+    public Response register(UserDTO user) {
         try {
             createUser(user);
             return Response.ok().build();
@@ -101,7 +101,7 @@ public class AuthService {
         }
     }
 
-    private Account createUser(UserDTO user) {
+    protected Account createUser(UserDTO user) {
         Account acct = getClient().instantiate(Account.class);
 
         acct.setUsername(user.getUserName());
@@ -133,15 +133,15 @@ public class AuthService {
         }
     }
 
-    private ApplicationRealm getRealm() {
+    protected ApplicationRealm getRealm() {
         return ((ApplicationRealm) ((RealmSecurityManager) SecurityUtils.getSecurityManager()).getRealms().iterator().next());
     }
 
-    private Client getClient() {
+    protected Client getClient() {
         return getRealm().getClient();
     }
 
-    private Application getApplication() {
+    protected Application getApplication() {
         return getClient().getResource(getRealm().getApplicationRestUrl(), Application.class);
     }
 }

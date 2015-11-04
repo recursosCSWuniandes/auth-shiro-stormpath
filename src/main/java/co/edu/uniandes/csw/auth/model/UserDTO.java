@@ -5,10 +5,13 @@
  */
 package co.edu.uniandes.csw.auth.model;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  *
  * @author Jonatan
  */
+@XmlRootElement
 public class UserDTO {
 
     private String name;
