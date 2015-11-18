@@ -5,6 +5,12 @@
  */
 package co.edu.uniandes.csw.auth.model;
 
+import com.stormpath.sdk.account.Account;
+import com.stormpath.sdk.group.Group;
+import com.stormpath.sdk.group.GroupList;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -14,19 +20,56 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class UserDTO {
 
-    private String name;
+    private String givenName;
+    private String middleName;
+    private String surName;
     private String userName;
+    private String fullName;
     private String password;
     private String email;
     private boolean rememberMe;
-    private String role;
-
-    public String getName() {
-        return name;
+    private List<String>  role;
+    public UserDTO() {
+        
+    }
+    public UserDTO(Account account) {
+        this.givenName = account.getGivenName();
+        this.middleName = account.getMiddleName();
+        this.surName = account.getSurname();
+        this.userName = account.getUsername();
+        this.fullName = account.getFullName();        
+        this.email = account.getEmail();               
+        /*GroupList groups = account.getGroups();
+            for(Group grp : groups) {
+                role.add(grp.getName());
+            } */
+        //this.rememberMe = rememberMe; 
+        //this.password = password;
+        
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getGivenName() {
+        return givenName;
+    }
+
+    public void setGivenName(String givenName) {
+        this.givenName = givenName;
+    }
+
+    public String getMiddleName() {
+        return middleName;
+    }
+
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
+    }
+
+    public String getSurName() {
+        return surName;
+    }
+
+    public void setSurName(String surName) {
+        this.surName = surName;
     }
 
     public String getUserName() {
@@ -35,6 +78,14 @@ public class UserDTO {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getPassword() {
@@ -61,12 +112,18 @@ public class UserDTO {
         this.rememberMe = rememberMe;
     }
 
-    public String getRole() {
+    public List<String> getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(List<String> role) {
         this.role = role;
     }
+    
+
+    
+
+    
 
 }
+

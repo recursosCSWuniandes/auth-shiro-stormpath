@@ -73,7 +73,7 @@ public class AuthService {
         if (currentUser != null) {
             Map<String, String> userAttributes = (Map<String, String>) currentUser.getPrincipals().oneByType(java.util.Map.class
             );
-            user.setName(userAttributes.get("givenName") + " " + userAttributes.get("surname"));
+            user.setFullName(userAttributes.get("givenName") + " " + userAttributes.get("surname"));
             user.setEmail(userAttributes.get("email"));
             user.setUserName(userAttributes.get("username"));
             return Response.ok(user)
@@ -107,13 +107,13 @@ public class AuthService {
         acct.setUsername(user.getUserName());
         acct.setPassword(user.getPassword());
         acct.setEmail(user.getEmail());
-        acct.setGivenName(user.getName());
-        acct.setSurname(user.getName());
+        acct.setGivenName(user.getGivenName());
+        acct.setSurname(user.getSurName());
         acct.setStatus(AccountStatus.ENABLED);
 
         Application application = getApplication();
         GroupList groups = application.getGroups();
-        for (Group grp : groups) {
+        for (Group grp : groups) { 
             if (grp.getName().equals(user.getRole())) {
                 acct = application.createAccount(acct);
                 acct.addGroup(grp);
