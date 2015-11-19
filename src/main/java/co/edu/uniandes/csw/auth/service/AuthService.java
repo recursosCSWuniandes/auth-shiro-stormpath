@@ -114,7 +114,7 @@ public class AuthService {
         Application application = getApplication();
         GroupList groups = application.getGroups();
         for (Group grp : groups) { 
-            if (grp.getName().equals(user.getRole())) {
+            if (grp.getName().equals(user.getRole().get(0))) {
                 acct = application.createAccount(acct);
                 acct.addGroup(grp);
                 break;

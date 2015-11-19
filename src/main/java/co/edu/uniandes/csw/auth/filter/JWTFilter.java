@@ -8,8 +8,9 @@ package co.edu.uniandes.csw.auth.filter;
 
 
 
+import co.edu.uniandes.csw.auth.security.JWT;
 import co.edu.uniandes.csw.auth.model.UserDTO;
-import com.stormpath.sdk.account.Account;
+import io.jsonwebtoken.SignatureException;
 import java.util.regex.Pattern;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -18,7 +19,6 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 
@@ -52,7 +52,7 @@ public class JWTFilter extends AuthenticatingFilter{
             UserDTO user=  jwt.verifyToken(token);
             login(user);
             return true;
-        } catch (AutorizacionException e) {
+        } catch (SignatureException e) {
             return false;
         }
             
@@ -72,17 +72,16 @@ public class JWTFilter extends AuthenticatingFilter{
             }
     }
     
-    private String getToken(HttpServletRequest httpRequest) throws AutorizacionException{
+    private String getToken(HttpServletRequest httpRequest) throws SignatureException{
         String token = null;
         final String authorizationHeader = httpRequest.getHeader("Authorization");
-        System.out.println("HEADER: "+authorizationHeader);
         if (authorizationHeader == null) {
-            throw new AutorizacionException("Unauthorized: No Authorization header was found");
+            throw new SignatureException("Unauthorized: No Authorization header was found");
         }
 
         String[] parts = authorizationHeader.split(" ");
         if (parts.length != 2) {
-            throw new AutorizacionException("Unauthorized: No Authorization header was found");
+            throw new SignatureException("Unauthorized: No Authorization header was found");
         }
 
         String scheme = parts[0];

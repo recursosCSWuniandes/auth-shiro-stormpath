@@ -1,4 +1,4 @@
-package co.edu.uniandes.csw.auth.filter;
+package co.edu.uniandes.csw.auth.security;
 
 
 import co.edu.uniandes.csw.auth.model.UserDTO;
@@ -6,13 +6,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.impl.crypto.MacProvider;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.crypto.KeyGenerator;
 
 
 /**
