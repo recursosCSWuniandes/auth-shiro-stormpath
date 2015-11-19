@@ -63,11 +63,11 @@ public class JWTFilter extends AuthenticatingFilter{
         UsernamePasswordToken token = new UsernamePasswordToken(user.getUserName(), user.getPassword(), user.isRememberMe());
             Subject currentUser = SecurityUtils.getSubject();
             currentUser.login(token);
-            if ("admininistrator".equalsIgnoreCase(user.getRole().get(0))) {
+            if ("admininistrator".equalsIgnoreCase(user.getRoles().get(0))) {
                 currentUser.getSession().setAttribute("Admin", user);
-            } else if ("developer".equalsIgnoreCase(user.getRole().get(0))) {
+            } else if ("developer".equalsIgnoreCase(user.getRoles().get(0))) {
                 currentUser.getSession().setAttribute("Developer", user);
-            } else if ("user".equalsIgnoreCase(user.getRole().get(0))) {
+            } else if ("user".equalsIgnoreCase(user.getRoles().get(0))) {
                 currentUser.getSession().setAttribute("Client", user);
             }
     }

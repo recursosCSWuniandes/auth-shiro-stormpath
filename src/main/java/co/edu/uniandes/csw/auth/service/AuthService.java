@@ -37,9 +37,10 @@ import javax.ws.rs.core.Context;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthService {
+
     @Context
     private HttpServletRequest req;
-    
+
     @Path("/login")
     @POST
     public Response login(UserDTO user) {
@@ -49,12 +50,12 @@ public class AuthService {
             currentUser.login(token);
             String href = req.getRemoteUser();
             Account account = getClient().getResource(href, Account.class);
-            UserDTO loggedUser=new UserDTO(account);
-            UserDTO userAux=loggedUser;
+            UserDTO loggedUser = new UserDTO(account);
+            UserDTO userAux = loggedUser;
             userAux.setPassword(user.getPassword());
-            JWT jwt=new JWT();
-            String tk=jwt.generateJWT(userAux);
-            
+            JWT jwt = new JWT();
+            String tk = jwt.generateJWT(userAux);
+
             return Response.ok(loggedUser).header("Authorization", tk).build();
         } catch (AuthenticationException e) {
             Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, e.getMessage());
@@ -63,8 +64,7 @@ public class AuthService {
                     .type(MediaType.TEXT_PLAIN)
                     .build();
         }
-    }  
-   
+    }
 
     @Path("/logout")
     @GET
@@ -87,7 +87,6 @@ public class AuthService {
         if (currentUser != null) {
             Map<String, String> userAttributes = (Map<String, String>) currentUser.getPrincipals().oneByType(java.util.Map.class
             );
-            user.setFullName(userAttributes.get("givenName") + " " + userAttributes.get("surname"));
             user.setEmail(userAttributes.get("email"));
             user.setUserName(userAttributes.get("username"));
             return Response.ok(user)
@@ -122,16 +121,19 @@ public class AuthService {
         acct.setPassword(user.getPassword());
         acct.setEmail(user.getEmail());
         acct.setGivenName(user.getGivenName());
+        acct.setMiddleName(user.getMiddleName());
         acct.setSurname(user.getSurName());
         acct.setStatus(AccountStatus.ENABLED);
 
         Application application = getApplication();
         GroupList groups = application.getGroups();
-        for (Group grp : groups) { 
-            if (grp.getName().equals(user.getRole().get(0))) {
-                acct = application.createAccount(acct);
-                acct.addGroup(grp);
-                break;
+        for (Group grp : groups) {
+            for (String role : user.getRoles()) {
+                if (grp.getName().equals(role)) {
+                    acct = application.createAccount(acct);
+                    acct.addGroup(grp);
+                    break;
+                }
             }
         }
         return acct;

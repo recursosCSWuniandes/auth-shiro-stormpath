@@ -8,8 +8,6 @@ package co.edu.uniandes.csw.auth.model;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.group.Group;
 import com.stormpath.sdk.group.GroupList;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -24,28 +22,25 @@ public class UserDTO {
     private String middleName;
     private String surName;
     private String userName;
-    private String fullName;
     private String password;
     private String email;
     private boolean rememberMe;
-    private List<String>  role;
+    private List<String> roles;
+
     public UserDTO() {
-        
+
     }
+
     public UserDTO(Account account) {
         this.givenName = account.getGivenName();
         this.middleName = account.getMiddleName();
         this.surName = account.getSurname();
         this.userName = account.getUsername();
-        this.fullName = account.getFullName();        
-        this.email = account.getEmail();               
+        this.email = account.getEmail();
         GroupList groups = account.getGroups();
-            for(Group grp : groups) {
-                role.add(grp.getName());
-            } 
-        //this.rememberMe = rememberMe; 
-        //this.password = password;
-        
+        for (Group grp : groups) {
+            roles.add(grp.getName());
+        }
     }
 
     public String getGivenName() {
@@ -81,11 +76,7 @@ public class UserDTO {
     }
 
     public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+        return String.join(" ", this.givenName, this.middleName, this.surName);
     }
 
     public String getPassword() {
@@ -112,18 +103,11 @@ public class UserDTO {
         this.rememberMe = rememberMe;
     }
 
-    public List<String> getRole() {
-        return role;
+    public List<String> getRoles() {
+        return roles;
     }
 
-    public void setRole(List<String> role) {
-        this.role = role;
+    public void setRoles(List<String> role) {
+        this.roles = role;
     }
-    
-
-    
-
-    
-
 }
-
