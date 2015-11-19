@@ -8,6 +8,7 @@ package co.edu.uniandes.csw.auth.model;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.group.Group;
 import com.stormpath.sdk.group.GroupList;
+import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -25,7 +26,7 @@ public class UserDTO {
     private String password;
     private String email;
     private boolean rememberMe;
-    private List<String> roles;
+    private List<String> roles = new ArrayList<>();
 
     public UserDTO() {
 
