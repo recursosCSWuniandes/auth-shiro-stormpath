@@ -39,10 +39,10 @@ public class UserDTO {
         this.userName = account.getUsername();
         this.fullName = account.getFullName();        
         this.email = account.getEmail();               
-        /*GroupList groups = account.getGroups();
+        GroupList groups = account.getGroups();
             for(Group grp : groups) {
                 role.add(grp.getName());
-            } */
+            } 
         //this.rememberMe = rememberMe; 
         //this.password = password;
         

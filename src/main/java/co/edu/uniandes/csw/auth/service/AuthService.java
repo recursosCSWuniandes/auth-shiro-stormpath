@@ -1,6 +1,7 @@
 package co.edu.uniandes.csw.auth.service;
 
 import co.edu.uniandes.csw.auth.model.UserDTO;
+import co.edu.uniandes.csw.auth.security.JWT;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.account.AccountCriteria;
 import com.stormpath.sdk.account.AccountList;
@@ -15,6 +16,7 @@ import com.stormpath.shiro.realm.ApplicationRealm;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -29,12 +31,15 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.mgt.RealmSecurityManager;
 import org.apache.shiro.subject.Subject;
+import javax.ws.rs.core.Context;
 
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthService {
-
+    @Context
+    private HttpServletRequest req;
+    
     @Path("/login")
     @POST
     public Response login(UserDTO user) {
@@ -42,7 +47,15 @@ public class AuthService {
         Subject currentUser = SecurityUtils.getSubject();
         try {
             currentUser.login(token);
-            return Response.ok(token).build();
+            String href = req.getRemoteUser();
+            Account account = getClient().getResource(href, Account.class);
+            UserDTO loggedUser=new UserDTO(account);
+            UserDTO userAux=loggedUser;
+            userAux.setPassword(user.getPassword());
+            JWT jwt=new JWT();
+            String tk=jwt.generateJWT(userAux);
+            
+            return Response.ok(loggedUser).header("Authorization", tk).build();
         } catch (AuthenticationException e) {
             Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST)
@@ -50,7 +63,8 @@ public class AuthService {
                     .type(MediaType.TEXT_PLAIN)
                     .build();
         }
-    }
+    }  
+   
 
     @Path("/logout")
     @GET
