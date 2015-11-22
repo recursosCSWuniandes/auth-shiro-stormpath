@@ -148,7 +148,21 @@ public class AuthService {
             account.delete();
         }
     }
-
+    
+    @Path("/forgot")
+    @POST
+    public Response forgotPassword(UserDTO user){
+        try {
+            getApplication().sendPasswordResetEmail(user.getEmail());
+            return Response.ok().build();
+        } catch (ResourceException e) {
+            return Response.status(e.getStatus())
+                    .entity(e.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+    }
+      
     protected ApplicationRealm getRealm() {
         return ((ApplicationRealm) ((RealmSecurityManager) SecurityUtils.getSecurityManager()).getRealms().iterator().next());
     }
