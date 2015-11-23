@@ -126,11 +126,12 @@ public class AuthService {
         acct.setStatus(AccountStatus.ENABLED);
 
         Application application = getApplication();
+        acct = application.createAccount(acct);
+
         GroupList groups = application.getGroups();
-        for (Group grp : groups) {
-            for (String role : user.getRoles()) {
+        for (String role : user.getRoles()) {
+            for (Group grp : groups) {
                 if (grp.getName().equals(role)) {
-                    acct = application.createAccount(acct);
                     acct.addGroup(grp);
                     break;
                 }
@@ -148,10 +149,10 @@ public class AuthService {
             account.delete();
         }
     }
-    
+
     @Path("/forgot")
     @POST
-    public Response forgotPassword(UserDTO user){
+    public Response forgotPassword(UserDTO user) {
         try {
             getApplication().sendPasswordResetEmail(user.getEmail());
             return Response.ok().build();
@@ -162,7 +163,7 @@ public class AuthService {
                     .build();
         }
     }
-      
+
     protected ApplicationRealm getRealm() {
         return ((ApplicationRealm) ((RealmSecurityManager) SecurityUtils.getSecurityManager()).getRealms().iterator().next());
     }
