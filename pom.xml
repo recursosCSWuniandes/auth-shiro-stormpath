@@ -19,6 +19,7 @@
         </snapshotRepository>
     </distributionManagement>
     <properties>
+        <sonar.host.url>http://157.253.238.75:9000/</sonar.host.url>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
