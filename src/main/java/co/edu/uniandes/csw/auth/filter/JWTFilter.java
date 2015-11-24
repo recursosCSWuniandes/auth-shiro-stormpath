@@ -18,28 +18,30 @@ public class JWTFilter extends AuthenticatingFilter {
 
     @Override
     protected AuthenticationToken createToken(ServletRequest req, ServletResponse rsp) throws Exception {
-        UserDTO user = JWT.verifyToken(getToken(req));
+        String token = getToken(req);
+        if (token == null) {
+            throw new Exception("No token provided");
+        }
+        UserDTO user = JWT.verifyToken(token);
         return createToken(user.getUserName(), user.getPassword(), req, rsp);
     }
 
     @Override
     protected boolean onAccessDenied(ServletRequest sr, ServletResponse response) throws Exception {
-        ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+        ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
         return false;
     }
 
     private String getToken(ServletRequest httpRequest) {
-
         Cookie[] cookies = ((HttpServletRequest) httpRequest).getCookies();
-        String token = null;
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("jwt-token") && cookie.isHttpOnly()) {
-                    token = cookie.getValue();
+                if (cookie.getName().equals(JWT.cookieName) && cookie.isHttpOnly()) {
+                    return cookie.getValue();
                 }
             }
         }
-        return token;
+        return null;
     }
 }

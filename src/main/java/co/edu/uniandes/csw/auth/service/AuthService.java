@@ -59,14 +59,14 @@ public class AuthService {
             loggedUser.setPassword(user.getPassword());
             String jwtToken = JWT.generateJWT(loggedUser);
 
-            Cookie jwt = new Cookie("jwt-token", jwtToken);
+            Cookie jwt = new Cookie(JWT.cookieName, jwtToken);
             jwt.setHttpOnly(true);
             jwt.setPath(req.getContextPath());
             rsp.addCookie(jwt);
             return user;
         } catch (AuthenticationException e) {
             Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, e.getMessage());
-            throw new WebApplicationException(e, 400);
+            throw new WebApplicationException(e, 401);
         }
     }
 

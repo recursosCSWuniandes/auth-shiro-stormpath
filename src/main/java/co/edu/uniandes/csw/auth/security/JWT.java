@@ -12,6 +12,8 @@ import java.util.List;
  */
 public abstract class JWT {
 
+    public static final String cookieName = "jwt-token";
+
     private static final String key = new ApiKeyProperties().getProperty("apiKey.secret");
 
     public static String generateJWT(UserDTO user) {
