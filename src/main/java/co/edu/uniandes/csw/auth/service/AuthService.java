@@ -16,7 +16,9 @@ import com.stormpath.shiro.realm.ApplicationRealm;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -24,6 +26,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.shiro.SecurityUtils;
@@ -41,28 +44,28 @@ public class AuthService {
     @Context
     private HttpServletRequest req;
 
+    @Context
+    private HttpServletResponse rsp;
+
     @Path("/login")
     @POST
-    public Response login(UserDTO user) {
-        UsernamePasswordToken token = new UsernamePasswordToken(user.getUserName(), user.getPassword(), user.isRememberMe());
+    public UserDTO login(UserDTO user) {
+        UsernamePasswordToken token = new UsernamePasswordToken(user.getUserName(), user.getPassword());
         Subject currentUser = SecurityUtils.getSubject();
         try {
             currentUser.login(token);
-            String href = req.getRemoteUser();
-            Account account = getClient().getResource(href, Account.class);
+            Account account = getClient().getResource(req.getRemoteUser(), Account.class);
             UserDTO loggedUser = new UserDTO(account);
-            UserDTO userAux = loggedUser;
-            userAux.setPassword(user.getPassword());
-            JWT jwt = new JWT();
-            String tk = jwt.generateJWT(userAux);
+            loggedUser.setPassword(user.getPassword());
+            String jwtToken = JWT.generateJWT(loggedUser);
 
-            return Response.ok(loggedUser).header("Authorization", tk).build();
+            Cookie jwt = new Cookie("jwt-token", jwtToken);
+            jwt.setHttpOnly(true);
+            rsp.addCookie(jwt);
+            return user;
         } catch (AuthenticationException e) {
             Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(e.getMessage())
-                    .type(MediaType.TEXT_PLAIN)
-                    .build();
+            throw new WebApplicationException(e, 400);
         }
     }
 
