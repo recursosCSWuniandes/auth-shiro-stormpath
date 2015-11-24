@@ -7,6 +7,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 
@@ -27,8 +28,13 @@ public class JWTFilter extends AuthenticatingFilter {
     }
 
     @Override
-    protected boolean onAccessDenied(ServletRequest sr, ServletResponse response) throws Exception {
-        ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
+    protected boolean onAccessDenied(ServletRequest req, ServletResponse rsp) throws Exception {
+        return executeLogin(req, rsp);
+    }
+
+    @Override
+    protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException e, ServletRequest request, ServletResponse response) {
+        ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         return false;
     }
 
@@ -37,7 +43,7 @@ public class JWTFilter extends AuthenticatingFilter {
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(JWT.cookieName) && cookie.isHttpOnly()) {
+                if (cookie.getName().equals(JWT.cookieName)) {
                     return cookie.getValue();
                 }
             }

@@ -83,7 +83,7 @@ public class AuthService {
         }
     }
 
-    @Path("/currentUser")
+    @Path("/me")
     @GET
     public Response getCurrentUser() {
         UserDTO user = new UserDTO();
