@@ -61,6 +61,7 @@ public class AuthService {
 
             Cookie jwt = new Cookie("jwt-token", jwtToken);
             jwt.setHttpOnly(true);
+            jwt.setPath(req.getContextPath());
             rsp.addCookie(jwt);
             return user;
         } catch (AuthenticationException e) {
