@@ -16,7 +16,7 @@ public abstract class JWT {
 
     private static final String key = new ApiKeyProperties().getProperty("apiKey.secret");
 
-    public static String generateJWT(UserDTO user) {
+    public static String generateJWT(UserDTO user, String password) {
         return Jwts.builder()
                 .claim("email", user.getEmail())
                 .claim("username", user.getUserName())
@@ -24,7 +24,7 @@ public abstract class JWT {
                 .claim("givenName", user.getGivenName())
                 .claim("middleName", user.getMiddleName())
                 .claim("surName", user.getSurName())
-                .claim("password", user.getPassword())
+                .claim("password", password)
                 .setSubject("auth")
                 .signWith(SignatureAlgorithm.HS512, key)
                 .compact();

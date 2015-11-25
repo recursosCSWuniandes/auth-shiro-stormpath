@@ -1,6 +1,7 @@
 package co.edu.uniandes.csw.auth.service;
 
 import co.edu.uniandes.csw.auth.model.UserDTO;
+import co.edu.uniandes.csw.auth.provider.StatusCreated;
 import co.edu.uniandes.csw.auth.security.JWT;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.account.AccountCriteria;
@@ -13,7 +14,6 @@ import com.stormpath.sdk.group.Group;
 import com.stormpath.sdk.group.GroupList;
 import com.stormpath.sdk.resource.ResourceException;
 import com.stormpath.shiro.realm.ApplicationRealm;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
@@ -56,9 +56,7 @@ public class AuthService {
             currentUser.login(token);
             Account account = getClient().getResource(req.getRemoteUser(), Account.class);
             UserDTO loggedUser = new UserDTO(account);
-            loggedUser.setPassword(user.getPassword());
-            String jwtToken = JWT.generateJWT(loggedUser);
-            loggedUser.setPassword("");
+            String jwtToken = JWT.generateJWT(loggedUser, user.getPassword());
 
             Cookie jwt = new Cookie(JWT.cookieName, jwtToken);
             jwt.setHttpOnly(true);
@@ -67,55 +65,39 @@ public class AuthService {
             return loggedUser;
         } catch (AuthenticationException e) {
             Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, e.getMessage());
-            throw new WebApplicationException(e, 401);
+            throw new WebApplicationException(e, rsp.SC_UNAUTHORIZED);
         }
     }
 
     @Path("/logout")
     @GET
-    public Response logout() {
-
+    public void logout() {
         Subject currentUser = SecurityUtils.getSubject();
         if (currentUser != null) {
             currentUser.logout();
-            return Response.ok().build();
-        } else {
-            return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }
 
     @Path("/me")
     @GET
-    public Response getCurrentUser() {
-        UserDTO user = new UserDTO();
-        Subject currentUser = SecurityUtils.getSubject();
-        if (currentUser != null) {
-            Map<String, String> userAttributes = (Map<String, String>) currentUser.getPrincipals().oneByType(java.util.Map.class
-            );
-            user.setEmail(userAttributes.get("email"));
-            user.setUserName(userAttributes.get("username"));
-            return Response.ok(user)
-                    .build();
+    public UserDTO getCurrentUser() {
+        String accountHref = req.getRemoteUser();
+        if (accountHref != null) {
+            Account account = getClient().getResource(accountHref, Account.class);
+            return new UserDTO(account);
         } else {
-            Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, "user null");
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("user null")
-                    .type(MediaType.TEXT_PLAIN)
-                    .build();
+            throw new WebApplicationException(rsp.SC_UNAUTHORIZED);
         }
     }
 
     @Path("/register")
     @POST
-    public Response register(UserDTO user) {
+    @StatusCreated
+    public void register(UserDTO user) {
         try {
             createUser(user);
-            return Response.ok().build();
         } catch (ResourceException e) {
-            return Response.status(e.getStatus())
-                    .entity(e.getMessage())
-                    .type(MediaType.TEXT_PLAIN)
-                    .build();
+            throw new WebApplicationException(e, rsp.SC_BAD_REQUEST);
         }
     }
 
