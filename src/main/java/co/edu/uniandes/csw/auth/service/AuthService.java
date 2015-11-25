@@ -65,7 +65,7 @@ public class AuthService {
             return loggedUser;
         } catch (AuthenticationException e) {
             Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, e.getMessage());
-            throw new WebApplicationException(e, rsp.SC_UNAUTHORIZED);
+            throw new WebApplicationException(e, HttpServletResponse.SC_UNAUTHORIZED);
         }
     }
 
@@ -86,7 +86,7 @@ public class AuthService {
             Account account = getClient().getResource(accountHref, Account.class);
             return new UserDTO(account);
         } else {
-            throw new WebApplicationException(rsp.SC_UNAUTHORIZED);
+            throw new WebApplicationException(HttpServletResponse.SC_UNAUTHORIZED);
         }
     }
 
@@ -97,7 +97,7 @@ public class AuthService {
         try {
             createUser(user);
         } catch (ResourceException e) {
-            throw new WebApplicationException(e, rsp.SC_BAD_REQUEST);
+            throw new WebApplicationException(e, e.getStatus());
         }
     }
 
@@ -139,15 +139,11 @@ public class AuthService {
 
     @Path("/forgot")
     @POST
-    public Response forgotPassword(UserDTO user) {
+    public void forgotPassword(UserDTO user) {
         try {
             getApplication().sendPasswordResetEmail(user.getEmail());
-            return Response.ok().build();
         } catch (ResourceException e) {
-            return Response.status(e.getStatus())
-                    .entity(e.getMessage())
-                    .type(MediaType.TEXT_PLAIN)
-                    .build();
+            throw new WebApplicationException(e, e.getStatus());
         }
     }
 
