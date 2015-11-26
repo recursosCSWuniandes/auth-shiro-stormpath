@@ -1,4 +1,4 @@
-package co.edu.uniandes.csw.auth.utils;
+package co.edu.uniandes.csw.auth.stormpath;
 
 import java.util.Properties;
 

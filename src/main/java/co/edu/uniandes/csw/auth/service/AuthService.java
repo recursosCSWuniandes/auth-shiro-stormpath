@@ -9,11 +9,9 @@ import com.stormpath.sdk.account.AccountList;
 import com.stormpath.sdk.account.AccountStatus;
 import com.stormpath.sdk.account.Accounts;
 import com.stormpath.sdk.application.Application;
-import com.stormpath.sdk.client.Client;
 import com.stormpath.sdk.group.Group;
 import com.stormpath.sdk.group.GroupList;
 import com.stormpath.sdk.resource.ResourceException;
-import com.stormpath.shiro.realm.ApplicationRealm;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
@@ -28,13 +26,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.mgt.RealmSecurityManager;
 import org.apache.shiro.subject.Subject;
 import javax.ws.rs.core.Context;
+import static co.edu.uniandes.csw.auth.stormpath.Utils.*;
 
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -56,12 +53,7 @@ public class AuthService {
             currentUser.login(token);
             Account account = getClient().getResource(req.getRemoteUser(), Account.class);
             UserDTO loggedUser = new UserDTO(account);
-            String jwtToken = JWT.generateJWT(loggedUser, user.getPassword());
-
-            Cookie jwt = new Cookie(JWT.cookieName, jwtToken);
-            jwt.setHttpOnly(true);
-            jwt.setPath(req.getContextPath());
-            rsp.addCookie(jwt);
+            rsp.addCookie(createJWTCookie(loggedUser, user.getPassword()));
             return loggedUser;
         } catch (AuthenticationException e) {
             Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, e.getMessage());
@@ -147,15 +139,11 @@ public class AuthService {
         }
     }
 
-    protected ApplicationRealm getRealm() {
-        return ((ApplicationRealm) ((RealmSecurityManager) SecurityUtils.getSecurityManager()).getRealms().iterator().next());
-    }
-
-    protected Client getClient() {
-        return getRealm().getClient();
-    }
-
-    protected Application getApplication() {
-        return getClient().getResource(getRealm().getApplicationRestUrl(), Application.class);
+    private Cookie createJWTCookie(UserDTO user, String password) {
+        String token = JWT.createToken(user, password);
+        Cookie cookie = new Cookie(JWT.cookieName, token);
+        cookie.setHttpOnly(true);
+        cookie.setPath(req.getContextPath());
+        return cookie;
     }
 }

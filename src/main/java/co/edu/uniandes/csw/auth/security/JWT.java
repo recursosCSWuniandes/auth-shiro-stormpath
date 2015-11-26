@@ -1,7 +1,7 @@
 package co.edu.uniandes.csw.auth.security;
 
 import co.edu.uniandes.csw.auth.model.UserDTO;
-import co.edu.uniandes.csw.auth.utils.ApiKeyProperties;
+import co.edu.uniandes.csw.auth.stormpath.ApiKeyProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -16,7 +16,7 @@ public abstract class JWT {
 
     private static final String key = new ApiKeyProperties().getProperty("apiKey.secret");
 
-    public static String generateJWT(UserDTO user, String password) {
+    public static String createToken(UserDTO user, String password) {
         return Jwts.builder()
                 .claim("email", user.getEmail())
                 .claim("username", user.getUserName())
