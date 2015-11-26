@@ -67,6 +67,11 @@ public class AuthService {
         Subject currentUser = SecurityUtils.getSubject();
         if (currentUser != null) {
             currentUser.logout();
+            Cookie cookie = new Cookie(JWT.cookieName, "");
+            cookie.setMaxAge(0);
+            cookie.setPath(req.getContextPath());
+            cookie.setHttpOnly(true);
+            rsp.addCookie(cookie);
         }
     }
 
@@ -78,7 +83,7 @@ public class AuthService {
             Account account = getClient().getResource(accountHref, Account.class);
             return new UserDTO(account);
         } else {
-            throw new WebApplicationException(HttpServletResponse.SC_UNAUTHORIZED);
+            return null;
         }
     }
 
