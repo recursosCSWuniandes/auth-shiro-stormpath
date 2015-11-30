@@ -148,6 +148,7 @@ public class AuthService {
         String token = JWT.createToken(user, password);
         Cookie cookie = new Cookie(JWT.cookieName, token);
         cookie.setHttpOnly(true);
+        cookie.setDomain(req.getServerName() + ":" + req.getServerPort());
         cookie.setPath(req.getContextPath());
         return cookie;
     }
