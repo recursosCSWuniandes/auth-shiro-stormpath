@@ -8,11 +8,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
+import org.apache.shiro.web.util.WebUtils;
 
 /**
  *
@@ -33,6 +33,9 @@ public class JWTFilter extends AuthenticatingFilter {
 
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
+        if ("OPTIONS".equals(WebUtils.toHttp(request).getMethod())) {
+            return true;
+        }
         Subject subject = getSubject(request, response);
         return subject.isAuthenticated();
     }
@@ -41,7 +44,7 @@ public class JWTFilter extends AuthenticatingFilter {
     protected boolean onAccessDenied(ServletRequest req, ServletResponse rsp, Object mappedValue) throws Exception {
         boolean allowThru = onAccessDenied(req, rsp) || isPermissive(mappedValue);
         if (!allowThru) {
-            ((HttpServletResponse) rsp).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            WebUtils.toHttp(rsp).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         return allowThru;
     }
@@ -57,7 +60,7 @@ public class JWTFilter extends AuthenticatingFilter {
     }
 
     private String getToken(ServletRequest httpRequest) {
-        Cookie[] cookies = ((HttpServletRequest) httpRequest).getCookies();
+        Cookie[] cookies = WebUtils.toHttp(httpRequest).getCookies();
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
