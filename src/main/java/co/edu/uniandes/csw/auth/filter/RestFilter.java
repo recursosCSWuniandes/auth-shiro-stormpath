@@ -9,7 +9,7 @@ import org.apache.shiro.web.filter.authz.HttpMethodPermissionFilter;
 public class RestFilter extends HttpMethodPermissionFilter {
 
     @Override
-    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws IOException {
+    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws IOException {        
         ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
         return false;
     }
