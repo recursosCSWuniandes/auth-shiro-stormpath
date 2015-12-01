@@ -15,9 +15,10 @@ public class CORSFilter extends PathMatchingFilter {
     @Override
     protected boolean onPreHandle(ServletRequest request, ServletResponse response, Object mappedValue) throws Exception {
         request.setAttribute(DefaultSubjectContext.SESSION_CREATION_ENABLED, Boolean.FALSE);
-        WebUtils.toHttp(response).setHeader("Access-Control-Allow-Origin", "*");
-        WebUtils.toHttp(response).setHeader("Access-Control-Allow-Methods", "*");
-        WebUtils.toHttp(response).setHeader("Access-Control-Allow-Headers", "*");
+        WebUtils.toHttp(response).setHeader("Access-Control-Allow-Origin", "http://localhost:9000");
+        WebUtils.toHttp(response).setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+        WebUtils.toHttp(response).setHeader("Access-Control-Allow-Headers", "accept, content-type, X-xsrf-token");
+        WebUtils.toHttp(response).setHeader("Access-Control-Allow-Credentials", "true");
         return true;
     }
 }
