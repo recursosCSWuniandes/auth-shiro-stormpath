@@ -137,10 +137,12 @@ public class AuthService {
     @Path("/forgot")
     @POST
     public void forgotPassword(UserDTO user) {
-        try {
-            getApplication().sendPasswordResetEmail(user.getEmail());
-        } catch (ResourceException e) {
-            throw new WebApplicationException(e, e.getStatus());
+        if (user != null) {
+            try {
+                getApplication().sendPasswordResetEmail(user.getEmail());
+            } catch (ResourceException e) {
+                throw new WebApplicationException(e, e.getStatus());
+            }
         }
     }
 
