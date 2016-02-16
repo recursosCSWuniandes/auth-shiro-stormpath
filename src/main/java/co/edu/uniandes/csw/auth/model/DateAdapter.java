@@ -5,6 +5,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
+/**
+ * JAX-B adapter to (un)marshall between java.util.Date and String
+ * @author af.esguerra10
+ */
 public class DateAdapter extends XmlAdapter<String, Date> {
 
     /**

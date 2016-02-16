@@ -7,6 +7,10 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
+/**
+ * Filter to change response status from OK to CREATED
+ * @author af.esguerra10
+ */
 @StatusCreated
 @Provider
 public class CreatedFilter implements ContainerResponseFilter{

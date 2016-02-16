@@ -15,8 +15,13 @@ import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.apache.shiro.web.util.WebUtils;
 
 /**
- *
+ * Authenticating filter that looks for a cookie with a JWT containing authenticating information.
+ * This filter allows users to authenticate using a JWT Token stored in a Cookie.
+ * It also allows the use of the permissive flag, in order to allow requests to pass through
+ * even when user is not authenticated.
+ * 
  * @author jd.patino10
+ * @author af.esguerra10
  */
 public class JWTFilter extends AuthenticatingFilter {
 
@@ -59,6 +64,13 @@ public class JWTFilter extends AuthenticatingFilter {
         }
     }
 
+    /**
+     * Searches through all the cookies in the httpRequest for a cookie containing a JWT Token.
+     * The name of the cookie to look for is configured in the JWT Class.
+     *
+     * @param httpRequest Servlet request
+     * @return Value of JWT cookie
+     */
     private String getToken(ServletRequest httpRequest) {
         Cookie[] cookies = WebUtils.toHttp(httpRequest).getCookies();
 

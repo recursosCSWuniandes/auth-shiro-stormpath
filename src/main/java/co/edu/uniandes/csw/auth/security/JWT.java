@@ -8,14 +8,30 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.List;
 
 /**
- * Created by andre on 25/09/2015.
+ * JWT Utilities Class
+ *
+ * @author jd.patino10
  */
 public abstract class JWT {
 
+    /**
+     * Name for the cookie to contain the token
+     */
     public static final String cookieName = "jwt-token";
 
+    /**
+     * Private Key to encrypt the token with
+     */
     private static final String key = new ApiKeyProperties().getProperty("apiKey.secret");
 
+    /**
+     * Creates a JWT Token using the provided information about the user.
+     *
+     *
+     * @param user User information
+     * @param password User password
+     * @return Encrypted JWT Token
+     */
     public static String createToken(UserDTO user, String password) {
         return Jwts.builder()
                 .claim("email", user.getEmail())
@@ -30,6 +46,12 @@ public abstract class JWT {
                 .compact();
     }
 
+    /**
+     * Decrypts a JWT token created with createToken.
+     *
+     * @param token JWT token
+     * @return User information
+     */
     public static UserDTO verifyToken(String token) {
         Claims jwtClaims = Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
         UserDTO user = new UserDTO();
