@@ -3,6 +3,7 @@ package co.edu.uniandes.csw.auth.security;
 import co.edu.uniandes.csw.auth.model.UserDTO;
 import co.edu.uniandes.csw.auth.stormpath.ApiKeyProperties;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.List;
@@ -17,30 +18,20 @@ public abstract class JWT {
     private static final String key = new ApiKeyProperties().getProperty("apiKey.secret");
 
     public static String createToken(UserDTO user, String password) {
+        JwtBuilder jwt = Jwts.builder()
+                .claim("email", user.getEmail())
+                .claim("username", user.getUserName())
+                .claim("roles", user.getRoles())
+                .claim("givenName", user.getGivenName())
+                .claim("surName", user.getSurName())
+                .claim("password", password)
+                .setSubject("auth")
+                .signWith(SignatureAlgorithm.HS512, key);
+
         if (user.getMiddleName() != null) {
-            return Jwts.builder()
-                    .claim("email", user.getEmail())
-                    .claim("username", user.getUserName())
-                    .claim("roles", user.getRoles())
-                    .claim("givenName", user.getGivenName())
-                    .claim("middleName", user.getMiddleName())
-                    .claim("surName", user.getSurName())
-                    .claim("password", password)
-                    .setSubject("auth")
-                    .signWith(SignatureAlgorithm.HS512, key)
-                    .compact();
-        } else {
-            return Jwts.builder()
-                    .claim("email", user.getEmail())
-                    .claim("username", user.getUserName())
-                    .claim("roles", user.getRoles())
-                    .claim("givenName", user.getGivenName())
-                    .claim("surName", user.getSurName())
-                    .claim("password", password)
-                    .setSubject("auth")
-                    .signWith(SignatureAlgorithm.HS512, key)
-                    .compact();
+            jwt.claim("middleName", user.getMiddleName());
         }
+        return jwt.compact();
     }
 
     public static UserDTO verifyToken(String token) {
