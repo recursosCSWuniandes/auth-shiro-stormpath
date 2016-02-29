@@ -2,6 +2,11 @@ package co.edu.uniandes.csw.auth.stormpath;
 
 import java.util.Properties;
 
+/**
+ * Retrieves API Key Id and Secret from Environment Variables
+ *
+ * @author af.esguerra10
+ */
 public class ApiKeyProperties extends Properties {
 
     public ApiKeyProperties() {

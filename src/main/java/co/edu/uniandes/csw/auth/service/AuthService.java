@@ -33,6 +33,11 @@ import org.apache.shiro.subject.Subject;
 import javax.ws.rs.core.Context;
 import static co.edu.uniandes.csw.auth.stormpath.Utils.*;
 
+/**
+ * Generic REST Resource for user authentication
+ *
+ * @author af.esguerra10
+ */
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -44,6 +49,11 @@ public class AuthService {
     @Context
     private HttpServletResponse rsp;
 
+    /**
+     * Performs a login based on the user's username and password
+     * @param user User information
+     * @return Authenticated user information
+     */
     @Path("/login")
     @POST
     public UserDTO login(UserDTO user) {
@@ -61,6 +71,9 @@ public class AuthService {
         }
     }
 
+    /**
+     * Performs a logout and destroys the JWT Cookie
+     */
     @Path("/logout")
     @GET
     public void logout() {
@@ -75,6 +88,10 @@ public class AuthService {
         }
     }
 
+    /**
+     * Retrieves the informatio of the currently-logged user if any
+     * @return User information
+     */
     @Path("/me")
     @GET
     public UserDTO getCurrentUser() {
@@ -87,6 +104,10 @@ public class AuthService {
         }
     }
 
+    /**
+     * Creates a user account
+     * @param user User information
+     */
     @Path("/register")
     @POST
     @StatusCreated
@@ -98,6 +119,12 @@ public class AuthService {
         }
     }
 
+    /**
+     * Creates a user account in Stormpath.
+     *
+     * @param user User information
+     * @return Created account
+     */
     protected Account createUser(UserDTO user) {
         Account acct = getClient().instantiate(Account.class);
 
@@ -124,6 +151,11 @@ public class AuthService {
         return acct;
     }
 
+    /**
+     * Deletes an account from stormpath.
+     *
+     * @param username Username
+     */
     @Path("delete/{username}")
     @DELETE
     public void deleteAccount(@PathParam("username") String username) {
@@ -134,6 +166,11 @@ public class AuthService {
         }
     }
 
+    /**
+     * Sends an email to recover a lost password to the registered email.
+     *
+     * @param user User information
+     */
     @Path("/forgot")
     @POST
     public void forgotPassword(UserDTO user) {
@@ -146,6 +183,12 @@ public class AuthService {
         }
     }
 
+    /**
+     * Creates a Cookie with a JWT Token
+     * @param user User information
+     * @param password User password
+     * @return Cookie with token
+     */
     private Cookie createJWTCookie(UserDTO user, String password) {
         String token = JWT.createToken(user, password);
         Cookie cookie = new Cookie(JWT.cookieName, token);

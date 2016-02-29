@@ -6,6 +6,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+/**
+ * Mapper for WebApplicationException to transform response when thrown.
+ * This is a Jersey Provider to transform the servlet's response when a WebApplicationException is thrown.
+ * Whenever this mapper is applied, response will return the exception message as the response body.
+ * @author af.esguerra10
+ */
 @Provider
 public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplicationException> {
 

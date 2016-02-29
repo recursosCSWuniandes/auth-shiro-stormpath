@@ -13,8 +13,8 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- *
- * @author Jonatan
+ * XML Mapping for data used in authentication API
+ * @author jj.alarcon10
  */
 @XmlRootElement
 public class UserDTO {
