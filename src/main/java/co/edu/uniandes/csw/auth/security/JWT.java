@@ -17,17 +17,30 @@ public abstract class JWT {
     private static final String key = new ApiKeyProperties().getProperty("apiKey.secret");
 
     public static String createToken(UserDTO user, String password) {
-        return Jwts.builder()
-                .claim("email", user.getEmail())
-                .claim("username", user.getUserName())
-                .claim("roles", user.getRoles())
-                .claim("givenName", user.getGivenName())
-                .claim("middleName", user.getMiddleName())
-                .claim("surName", user.getSurName())
-                .claim("password", password)
-                .setSubject("auth")
-                .signWith(SignatureAlgorithm.HS512, key)
-                .compact();
+        if (user.getMiddleName() != null) {
+            return Jwts.builder()
+                    .claim("email", user.getEmail())
+                    .claim("username", user.getUserName())
+                    .claim("roles", user.getRoles())
+                    .claim("givenName", user.getGivenName())
+                    .claim("middleName", user.getMiddleName())
+                    .claim("surName", user.getSurName())
+                    .claim("password", password)
+                    .setSubject("auth")
+                    .signWith(SignatureAlgorithm.HS512, key)
+                    .compact();
+        } else {
+            return Jwts.builder()
+                    .claim("email", user.getEmail())
+                    .claim("username", user.getUserName())
+                    .claim("roles", user.getRoles())
+                    .claim("givenName", user.getGivenName())
+                    .claim("surName", user.getSurName())
+                    .claim("password", password)
+                    .setSubject("auth")
+                    .signWith(SignatureAlgorithm.HS512, key)
+                    .compact();
+        }
     }
 
     public static UserDTO verifyToken(String token) {
@@ -37,7 +50,9 @@ public abstract class JWT {
         user.setUserName(jwtClaims.get("username").toString());
         user.setRoles((List<String>) jwtClaims.get("roles"));
         user.setGivenName(jwtClaims.get("givenName").toString());
-        user.setMiddleName(jwtClaims.get("middleName").toString());
+        if (jwtClaims.get("middleName") != null) {
+            user.setMiddleName(jwtClaims.get("middleName").toString());
+        }
         user.setSurName(jwtClaims.get("surName").toString());
         user.setPassword(jwtClaims.get("password").toString());
         return user;
