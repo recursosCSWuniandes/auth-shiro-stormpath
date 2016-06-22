@@ -21,6 +21,7 @@ public class CORSFilter extends PathMatchingFilter {
         WebUtils.toHttp(response).setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
         WebUtils.toHttp(response).setHeader("Access-Control-Allow-Headers", "accept, content-type, X-xsrf-token");
         WebUtils.toHttp(response).setHeader("Access-Control-Allow-Credentials", "true");
+        WebUtils.toHttp(response).setHeader("Access-Control-Expose-Headers", "X-Total-Count");
         return true;
     }
 }
