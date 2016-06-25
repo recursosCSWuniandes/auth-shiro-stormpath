@@ -1,8 +1,7 @@
 package co.edu.uniandes.csw.auth.security;
 
-import co.edu.uniandes.csw.auth.model.NewUserDTO;
+import co.edu.uniandes.csw.auth.model.UserDTO;
 import co.edu.uniandes.csw.auth.stormpath.ApiKeyProperties;
-import com.stormpath.sdk.account.Account;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -19,34 +18,34 @@ public abstract class JWT {
     /**
      * Name for the cookie to contain the token
      */
-    public static final String cookieName = "accessToken";
+    public static final String cookieName = "jwt-token";
 
     /**
      * Private Key to encrypt the token with
      */
-    private static final String key = new ApiKeyProperties().getApiKeySecret();
+    private static final String key = new ApiKeyProperties().getProperty("apiKey.secret");
 
     /**
      * Creates a JWT Token using the provided information about the user.
      *
      *
-     * @param acc User information
+     * @param user User information
      * @param password User password
      * @return Encrypted JWT Token
      */
-    public static String createToken(Account acc, String password) {
+    public static String createToken(UserDTO user, String password) {
         JwtBuilder jwt = Jwts.builder()
-                .claim("email", acc.getEmail())
-                .claim("username", acc.getUsername())
-                .claim("roles", acc.getGroups())
-                .claim("givenName", acc.getGivenName())
-                .claim("surName", acc.getSurname())
+                .claim("email", user.getEmail())
+                .claim("username", user.getUserName())
+                .claim("roles", user.getRoles())
+                .claim("givenName", user.getGivenName())
+                .claim("surName", user.getSurName())
                 .claim("password", password)
                 .setSubject("auth")
                 .signWith(SignatureAlgorithm.HS512, key);
 
-        if (acc.getMiddleName() != null) {
-            jwt.claim("middleName", acc.getMiddleName());
+        if (user.getMiddleName() != null) {
+            jwt.claim("middleName", user.getMiddleName());
         }
         return jwt.compact();
     }
@@ -57,12 +56,12 @@ public abstract class JWT {
      * @param token JWT token
      * @return User information
      */
-    public static NewUserDTO verifyToken(String token) {
+    public static UserDTO verifyToken(String token) {
         Claims jwtClaims = Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
-        NewUserDTO user = new NewUserDTO();
+        UserDTO user = new UserDTO();
         user.setEmail(jwtClaims.get("email").toString());
         user.setUserName(jwtClaims.get("username").toString());
-        user.setGroups((List<String>) jwtClaims.get("roles"));
+        user.setRoles((List<String>) jwtClaims.get("roles"));
         user.setGivenName(jwtClaims.get("givenName").toString());
         if (jwtClaims.get("middleName") != null) {
             user.setMiddleName(jwtClaims.get("middleName").toString());

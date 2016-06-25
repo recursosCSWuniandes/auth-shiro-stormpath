@@ -1,7 +1,7 @@
 package co.edu.uniandes.csw.auth.filter;
 
-import co.edu.uniandes.csw.auth.model.NewUserDTO;
 import co.edu.uniandes.csw.auth.security.JWT;
+import co.edu.uniandes.csw.auth.model.UserDTO;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletRequest;
@@ -29,7 +29,7 @@ public class JWTFilter extends AuthenticatingFilter {
     protected AuthenticationToken createToken(ServletRequest req, ServletResponse rsp) throws Exception {
         String token = getToken(req);
         try {
-            NewUserDTO user = JWT.verifyToken(token);
+            UserDTO user = JWT.verifyToken(token);
             return createToken(user.getUserName(), user.getPassword(), req, rsp);
         } catch (Exception e) {
             throw new AuthenticationException(e);

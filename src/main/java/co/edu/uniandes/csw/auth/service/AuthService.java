@@ -1,22 +1,5 @@
-/*
- * Copyright 2015 Los Andes University
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package co.edu.uniandes.csw.auth.resource;
+package co.edu.uniandes.csw.auth.service;
 
-import co.edu.uniandes.csw.auth.model.CredentialsDTO;
-import co.edu.uniandes.csw.auth.model.NewUserDTO;
 import co.edu.uniandes.csw.auth.model.UserDTO;
 import co.edu.uniandes.csw.auth.provider.StatusCreated;
 import co.edu.uniandes.csw.auth.security.JWT;
@@ -55,12 +38,10 @@ import static co.edu.uniandes.csw.auth.stormpath.Utils.*;
  *
  * @author af.esguerra10
  */
-@Path("/accounts")
+@Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class AuthResource {
-
-    private static final Logger logger = Logger.getLogger(AuthResource.class.getName());
+public class AuthService {
 
     @Context
     private HttpServletRequest req;
@@ -70,23 +51,23 @@ public class AuthResource {
 
     /**
      * Performs a login based on the user's username and password
-     *
-     * @param credentials User information
+     * @param user User information
      * @return Authenticated user information
      */
     @Path("/login")
     @POST
-    public UserDTO login(CredentialsDTO credentials) {
-        UsernamePasswordToken token = new UsernamePasswordToken(credentials.getUsername(), credentials.getPassword());
+    public UserDTO login(UserDTO user) {
+        UsernamePasswordToken token = new UsernamePasswordToken(user.getUserName(), user.getPassword());
         Subject currentUser = SecurityUtils.getSubject();
         try {
             currentUser.login(token);
             Account account = getClient().getResource(req.getRemoteUser(), Account.class);
-            rsp.addCookie(createJWTCookie(account, credentials.getPassword()));
-            return new UserDTO(account);
+            UserDTO loggedUser = new UserDTO(account);
+            rsp.addCookie(createJWTCookie(loggedUser, user.getPassword()));
+            return loggedUser;
         } catch (AuthenticationException e) {
-            logger.log(Level.WARNING, e.getMessage());
-            throw new WebApplicationException(e, HttpServletResponse.SC_BAD_REQUEST);
+            Logger.getLogger(AuthService.class.getName()).log(Level.WARNING, e.getMessage());
+            throw new WebApplicationException(e, HttpServletResponse.SC_UNAUTHORIZED);
         }
     }
 
@@ -108,8 +89,7 @@ public class AuthResource {
     }
 
     /**
-     * Retrieves the information of the currently-logged user if any
-     *
+     * Retrieves the informatio of the currently-logged user if any
      * @return User information
      */
     @Path("/me")
@@ -120,24 +100,20 @@ public class AuthResource {
             Account account = getClient().getResource(accountHref, Account.class);
             return new UserDTO(account);
         } else {
-            throw new WebApplicationException(401);
+            return null;
         }
     }
 
     /**
      * Creates a user account
-     *
      * @param user User information
-     *
-     * @return Usuario creado
      */
     @Path("/register")
     @POST
     @StatusCreated
-    public UserDTO register(NewUserDTO user) {
+    public void register(UserDTO user) {
         try {
-            Account acc = createUser(user);
-            return new UserDTO(acc);
+            createUser(user);
         } catch (ResourceException e) {
             throw new WebApplicationException(e, e.getStatus());
         }
@@ -149,7 +125,7 @@ public class AuthResource {
      * @param user User information
      * @return Created account
      */
-    public Account createUser(NewUserDTO user) {
+    protected Account createUser(UserDTO user) {
         Account acct = getClient().instantiate(Account.class);
 
         acct.setUsername(user.getUserName());
@@ -158,18 +134,16 @@ public class AuthResource {
         acct.setGivenName(user.getGivenName());
         acct.setMiddleName(user.getMiddleName());
         acct.setSurname(user.getSurName());
-
         acct.setStatus(AccountStatus.ENABLED);
 
         Application application = getApplication();
         acct = application.createAccount(acct);
 
         GroupList groups = application.getGroups();
-
-        for (String userGroup : user.getGroups()) {
-            for (Group group : groups) {
-                if (group.getName().equals(userGroup)) {
-                    acct.addGroup(group);
+        for (String role : user.getRoles()) {
+            for (Group grp : groups) {
+                if (grp.getName().equals(role)) {
+                    acct.addGroup(grp);
                     break;
                 }
             }
@@ -211,13 +185,12 @@ public class AuthResource {
 
     /**
      * Creates a Cookie with a JWT Token
-     *
-     * @param acc User information
+     * @param user User information
      * @param password User password
      * @return Cookie with token
      */
-    private Cookie createJWTCookie(Account acc, String password) {
-        String token = JWT.createToken(acc, password);
+    private Cookie createJWTCookie(UserDTO user, String password) {
+        String token = JWT.createToken(user, password);
         Cookie cookie = new Cookie(JWT.cookieName, token);
         cookie.setHttpOnly(true);
         cookie.setPath(req.getContextPath());
